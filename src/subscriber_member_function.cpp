@@ -1,12 +1,12 @@
 /**
  * @file subscriber_member_function.cpp
  * @author Nitesh Jha (niteshj@umd.edu)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-11-16
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 #include <functional>
 #include <memory>
