@@ -13,10 +13,10 @@
 #include <functional>
 #include <memory>
 #include <string>
-// #include <rcl_interfaces/msg/detail/parameter_descriptor__struct.hpp>
+#include <rcl_interfaces/msg/detail/parameter_descriptor__struct.hpp>
+#include "cpp_pubsub/srv/modify_string.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
-#include "cpp_pubsub/srv/modify_string.hpp"
 
 using namespace std::chrono_literals;
 
@@ -27,24 +27,37 @@ class MinimalPublisher : public rclcpp::Node {
  public:
   MinimalPublisher() : Node("minimal_publisher"), count_(0) {
     publisher_ = this->create_publisher<std_msgs::msg::String>("topic", 10);
+
+    auto param_desc = rcl_interfaces::msg::ParameterDescriptor{};
+    param_desc.description = "Count starts from this parameter value";
+
+    int count;
+    this->declare_parameter("count", count, param_desc);
+
+    count =
+    this->get_parameter("count").get_parameter_value().get<int>();
+    count_ = count;
+    RCLCPP_DEBUG_STREAM(this->get_logger(), "Count begins from: " << count_);
     timer_ = this->create_wall_timer(
         500ms, std::bind(&MinimalPublisher::timer_callback, this));
     pub_message = "Fear the turtle!";
     RCLCPP_DEBUG_STREAM(this->get_logger(), "Initial string: " << pub_message);
-    modify_string_service_ = this->create_service<cpp_pubsub::srv::ModifyString>("/modify_string",std::bind(&MinimalPublisher::modify, this,
-    std::placeholders::_1, std::placeholders::_2));
+    modify_string_service_ =
+        this->create_service<cpp_pubsub::srv::ModifyString>(
+            "/modify_string",
+            std::bind(&MinimalPublisher::modify, this, std::placeholders::_1,
+                      std::placeholders::_2));
     RCLCPP_DEBUG(this->get_logger(), "Initialized publisher");
   }
 
  private:
-
-  void modify(const std::shared_ptr<cpp_pubsub::srv::ModifyString::Request> request,
-            std::shared_ptr<cpp_pubsub::srv::ModifyString::Response>  response) {
-          
-              response->b = request->a;
-              pub_message = response->b;
-              RCLCPP_WARN_STREAM(this->get_logger(), "Modified string to: " << pub_message);
-
+  void modify(
+      const std::shared_ptr<cpp_pubsub::srv::ModifyString::Request> request,
+      std::shared_ptr<cpp_pubsub::srv::ModifyString::Response> response) {
+    response->b = request->a;
+    pub_message = response->b;
+    RCLCPP_WARN_STREAM(this->get_logger(),
+                       "Modified string to: " << pub_message);
   }
 
   void timer_callback() {
@@ -52,15 +65,14 @@ class MinimalPublisher : public rclcpp::Node {
     message.data = pub_message + std::to_string(count_++);
     RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
     RCLCPP_ERROR(this->get_logger(), "Count: %ld", count_);
-    
-
 
     publisher_->publish(message);
   }
   std::string pub_message;
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
-  rclcpp::Service<cpp_pubsub::srv::ModifyString>::SharedPtr modify_string_service_;
+  rclcpp::Service<cpp_pubsub::srv::ModifyString>::SharedPtr
+      modify_string_service_;
   size_t count_;
 };
 

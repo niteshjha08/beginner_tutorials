@@ -1,5 +1,4 @@
-(information) Couldn't find path given by -I '~/ros2_humble/install/rclcpp/include/'
 Checking src/publisher_member_function.cpp ...
-1/2 files checked 58% done
+1/2 files checked 74% done
 Checking src/subscriber_member_function.cpp ...
 2/2 files checked 100% done
