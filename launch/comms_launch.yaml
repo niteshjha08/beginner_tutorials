@@ -1,0 +1,23 @@
+launch:
+
+
+- arg:
+      name: "count"
+      default: "0"
+
+- node:
+      pkg: "cpp_pubsub"
+      exec: "talker"
+      name: "talker"
+      namespace: "beginner_tutorials"
+      output: "screen"
+      param:
+        - name: "count"
+          value: "$(var count)"
+
+- node:
+      pkg: "cpp_pubsub"
+      exec: "listener"
+      name: "listener"
+      namespace: "beginner_tutorials"
+      output: "screen"

@@ -17,3 +17,15 @@ Ubuntu 20.04
 `ros2 run cpp_pubsub talker` : publisher
 
 `ros2 run cpp_pubsub listener` : subscriber
+
+## Services and Logging
+1) Run publisher and subscriber separately as before 
+`ros2 run cpp_pubsub talker` : publisher
+
+`ros2 run cpp_pubsub listener` : subscriber
+
+2) OR, use launch file to run them: 
+`ros2 launch cpp_pubsub comms_launch.yaml count:=1` where 1 is the starting value of the publish message.
+
+3) Call service to change the text being published with:
+`ros2 service call /modify_string cpp_pubsub/srv/ModifyString "{a: new_string}" `
