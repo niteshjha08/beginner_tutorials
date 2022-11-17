@@ -29,3 +29,10 @@ Ubuntu 20.04
 
 3) Call service to change the text being published with:
 `ros2 service call /modify_string cpp_pubsub/srv/ModifyString "{a: new_string}" `
+
+## Results
+### RQT Console
+![logs](https://github.com/niteshjha08/beginner_tutorials/blob/Week10_HW/media/logs.png)
+
+### CLI logs
+![cli_logs](https://github.com/niteshjha08/beginner_tutorials/blob/Week10_HW/media/cli_log.png)
