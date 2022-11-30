@@ -41,6 +41,10 @@ SOFTWARE.
 #include "cpp_pubsub/srv/modify_string.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
+#include "geometry_msgs/msg/transform_stamped.hpp"
+#include "tf2_ros/transform_broadcaster.h"
+#include "tf2/exceptions.h"
+#include "tf2/LinearMath/Quaternion.h"
 
 using namespace std::chrono_literals;
 
@@ -80,6 +84,27 @@ class MinimalPublisher : public rclcpp::Node {
             std::bind(&MinimalPublisher::modify, this, std::placeholders::_1,
                       std::placeholders::_2));
     RCLCPP_DEBUG(this->get_logger(), "Initialized publisher");
+
+    tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster> (*this);
+
+    // Read message content and assign it to
+    // corresponding tf variables
+    
+    t.header.stamp = this->get_clock()->now();
+    t.header.frame_id = "/world";
+    t.child_frame_id = "/talk";
+    // tf_broadcaster_->sendTransform(t);
+    t.transform.translation.x = 1.0;
+    t.transform.translation.y = 1.0;
+    t.transform.translation.z = 1.0;
+
+    tf2::Quaternion q;
+    q.setRPY(1.571,0.1,0.1);
+    t.transform.rotation.x = q.x();
+    t.transform.rotation.y = q.y();
+    t.transform.rotation.z = q.z();
+    t.transform.rotation.w = q.w();    
+    
   }
 
  private:
@@ -96,6 +121,8 @@ class MinimalPublisher : public rclcpp::Node {
     pub_message = response->b;
     RCLCPP_WARN_STREAM(this->get_logger(),
                        "Modified string to: " << pub_message);
+
+    
   }
   // publish string at regular intervals 
   void timer_callback() {
@@ -105,6 +132,10 @@ class MinimalPublisher : public rclcpp::Node {
     RCLCPP_ERROR(this->get_logger(), "Count: %ld", count_);
 
     publisher_->publish(message);
+
+    // Broadcast the tf frame
+    tf_broadcaster_->sendTransform(t);
+    
   }
   std::string pub_message;
   rclcpp::TimerBase::SharedPtr timer_;
@@ -112,6 +143,11 @@ class MinimalPublisher : public rclcpp::Node {
   rclcpp::Service<cpp_pubsub::srv::ModifyString>::SharedPtr
       modify_string_service_;
   size_t count_;
+
+  std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+  //Prepare a constant tf frame 
+  geometry_msgs::msg::TransformStamped t;
+  
 };
 
 int main(int argc, char* argv[]) {
