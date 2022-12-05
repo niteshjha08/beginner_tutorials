@@ -35,13 +35,10 @@ SOFTWARE.
 #ifndef INCLUDE_CPP_PUBSUB_PUBLISHER_MEMBER_FUNCTION_HPP_
 #define INCLUDE_CPP_PUBSUB_PUBLISHER_MEMBER_FUNCTION_HPP_
 
-#include <chrono>
-#include <functional>
-#include <memory>
-#include <rcl_interfaces/msg/detail/parameter_descriptor__struct.hpp>
 #include <string>
+#include <memory>
 
-#include "cpp_pubsub/srv/modify_string.hpp"
+#include <rcl_interfaces/msg/detail/parameter_descriptor__struct.hpp>
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
@@ -49,32 +46,46 @@ SOFTWARE.
 #include "tf2/exceptions.h"
 #include "tf2_ros/transform_broadcaster.h"
 
-using namespace std::chrono_literals;
+#include "cpp_pubsub/srv/modify_string.hpp"
 
+/**
+ * @brief Class for a minimal publisher node that publishes a string on topic 'topic', and a tf frame.
+ * 
+ */
 class MinimalPublisher : public rclcpp::Node {
  public:
   MinimalPublisher();
 
  private:
+ /**
+  * @brief Callback function for the service ModifyString
+  * 
+  * @param request 
+  * @param response 
+  */
   void modify(
       const std::shared_ptr<cpp_pubsub::srv::ModifyString::Request> request,
       std::shared_ptr<cpp_pubsub::srv::ModifyString::Response> response);
 
+    /**
+     * @brief Callback function for the timer
+     * 
+     */
   void timer_callback();
-
+  // timer member variable
   rclcpp::TimerBase::SharedPtr timer_;
-
+  // publisher member variable
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
-
+    // service member variable
   rclcpp::Service<cpp_pubsub::srv::ModifyString>::SharedPtr
       modify_string_service_;
-
+    // message to be published
   std::string pub_message_;
-
+    // count of the number of times the timer has been called
   size_t count_;
-
+    // tf broadcaster
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
-
+    // transform
   geometry_msgs::msg::TransformStamped t;
 };
 

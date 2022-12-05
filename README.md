@@ -30,6 +30,14 @@ Ubuntu 20.04
 3) Call service to change the text being published with:
 `ros2 service call /modify_string cpp_pubsub/srv/ModifyString "{a: new_string}" `
 
+## Results of Services and Logging
+### RQT Console
+![logs](https://github.com/niteshjha08/beginner_tutorials/blob/Week10_HW/media/logs.png)
+
+### CLI logs
+![cli_logs](https://github.com/niteshjha08/beginner_tutorials/blob/Week10_HW/media/cli_log.png)
+
+
 ## TF2, ROS bag record
 1) Launch talker, listener, and optionally the ros2 bag recorded as follows (use record:=1 to record all topics/ record:=0 to not record):
 `ros2 launch ros2 launch cpp_pubsub start_comms.py record:=1`
@@ -37,23 +45,22 @@ Ubuntu 20.04
 #### Results of tf2 testing:
 a) `ros2 run tf2_ros tf2_echo world talk`
 
-![tf2_echo]()
+![tf2_echo](https://github.com/niteshjha08/beginner_tutorials/blob/Week11_HW/media/tf2_echo.png)
 
 b) `ros2 run tf2_tools view_frames`
 
-![view_frame]()
+![view_frame](https://github.com/niteshjha08/beginner_tutorials/blob/Week11_HW/media/view_frame.png)
+
+#### Result of recorded bag testing
+![bag_testing](https://github.com/niteshjha08/beginner_tutorials/blob/Week11_HW/media/bag_testing.png)
 
 ## Testing 
 ### Using colcon test
 `colcon test --event-handlers console_direct+ --packages-select cpp_pubsub`
 
-![colcon_test]()
+![colcon_test](https://github.com/niteshjha08/beginner_tutorials/blob/Week11_HW/media/colcon_test.png)
+
+### Using test executable
 `ros2 run cpp_pubsub pub_test`
 
-![pub_test]()
-## Results
-### RQT Console
-![logs](https://github.com/niteshjha08/beginner_tutorials/blob/Week10_HW/media/logs.png)
-
-### CLI logs
-![cli_logs](https://github.com/niteshjha08/beginner_tutorials/blob/Week10_HW/media/cli_log.png)
+![pub_test](https://github.com/niteshjha08/beginner_tutorials/blob/Week11_HW/media/cpppub_test.png)

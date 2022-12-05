@@ -33,12 +33,9 @@ SOFTWARE.
  *
  */
 
-#include <chrono>
-#include <cpp_pubsub/publisher_member_function.hpp>
-#include <functional>
-#include <memory>
-#include <rcl_interfaces/msg/detail/parameter_descriptor__struct.hpp>
 #include <string>
+#include <cpp_pubsub/publisher_member_function.hpp>
+#include <rcl_interfaces/msg/detail/parameter_descriptor__struct.hpp>
 
 #include "cpp_pubsub/srv/modify_string.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
@@ -48,7 +45,6 @@ SOFTWARE.
 #include "tf2/exceptions.h"
 #include "tf2_ros/transform_broadcaster.h"
 
-using namespace std::chrono_literals;
 
 /**
  * @brief Construct a new Minimal Publisher:: Minimal Publisher object
@@ -101,12 +97,8 @@ MinimalPublisher::MinimalPublisher() : Node("minimal_publisher"), count_(0) {
   t.transform.rotation.w = q.w();
 }
 
-//  /**
-//   * @brief Service callback function which modifies the published string
-//   *
-//   * @param request string
-//   * @param response string
-//   */
+
+// Service callback function which modifies the published string
 void MinimalPublisher::modify(
     const std::shared_ptr<cpp_pubsub::srv::ModifyString::Request> request,
     std::shared_ptr<cpp_pubsub::srv::ModifyString::Response> response) {
@@ -115,7 +107,7 @@ void MinimalPublisher::modify(
   RCLCPP_WARN_STREAM(this->get_logger(),
                      "Modified string to: " << pub_message_);
 }
-//   // publish string at regular intervals
+// publish string and tf at regular intervals
 void MinimalPublisher::timer_callback() {
   auto message = std_msgs::msg::String();
   message.data = pub_message_ + std::to_string(count_++);

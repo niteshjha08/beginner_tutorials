@@ -1,2 +1,6 @@
-Done processing src/publisher_member_function.cpp
-Done processing src/subscriber_member_function.cpp
+cpplint $( find . -name *.cpp -or -name *.hpp | grep -vE -e "^./build/" -e "^./vendor/" -e "^./install/") > results/cpplint.txt
+
+Done processing ./include/cpp_pubsub/publisher_member_function.hpp
+Done processing ./src/publisher_member_function.cpp
+Done processing ./src/subscriber_member_function.cpp
+Done processing ./test/main.cpp
