@@ -77,8 +77,6 @@ TEST_F(TalkerTest, test2) {
   }
   try {
     transform = tf_buffer->lookupTransform("world", "talk", rclcpp::Time(0));
-    std::cout << "Transform: " << transform.transform.translation.x
-              << std::endl;
   } catch (tf2::TransformException& ex) {
     std::cout << "Transform not available" << std::endl;
     FAIL();
