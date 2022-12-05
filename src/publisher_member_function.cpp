@@ -34,121 +34,99 @@ SOFTWARE.
  */
 
 #include <chrono>
+#include <cpp_pubsub/publisher_member_function.hpp>
 #include <functional>
 #include <memory>
-#include <string>
 #include <rcl_interfaces/msg/detail/parameter_descriptor__struct.hpp>
+#include <string>
+
 #include "cpp_pubsub/srv/modify_string.hpp"
+#include "geometry_msgs/msg/transform_stamped.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
-#include "geometry_msgs/msg/transform_stamped.hpp"
-#include "tf2_ros/transform_broadcaster.h"
-#include "tf2/exceptions.h"
 #include "tf2/LinearMath/Quaternion.h"
+#include "tf2/exceptions.h"
+#include "tf2_ros/transform_broadcaster.h"
 
 using namespace std::chrono_literals;
 
-/* This example creates a subclass of Node and uses std::bind() to register a
- * member function as a callback from the timer. */
+/**
+ * @brief Construct a new Minimal Publisher:: Minimal Publisher object
+ *
+ */
+MinimalPublisher::MinimalPublisher() : Node("minimal_publisher"), count_(0) {
+  // Create publisher
+  publisher_ = this->create_publisher<std_msgs::msg::String>("topic", 10);
 
-class MinimalPublisher : public rclcpp::Node {
- public:
- /**
-  * @brief Constructor for ROS2 node
-  * 
-  */
-  MinimalPublisher() : Node("minimal_publisher"), count_(0) {
-    // Create publisher
-    publisher_ = this->create_publisher<std_msgs::msg::String>("topic", 10);
+  // get launch arg for start of count
+  auto param_desc = rcl_interfaces::msg::ParameterDescriptor{};
+  param_desc.description = "Count starts from this parameter value";
 
-    // get launch arg for start of count
-    auto param_desc = rcl_interfaces::msg::ParameterDescriptor{};
-    param_desc.description = "Count starts from this parameter value";
+  int count;
+  this->declare_parameter("count", count, param_desc);
 
-    int count;
-    this->declare_parameter("count", count, param_desc);
+  count = this->get_parameter("count").get_parameter_value().get<int>();
+  count_ = count;
+  RCLCPP_DEBUG_STREAM(this->get_logger(), "Count begins from: " << count_);
+  // timer for publishing at regular intervals
+  timer_ = this->create_wall_timer(
+      500ms, std::bind(&MinimalPublisher::timer_callback, this));
+  pub_message_ = "Fear the turtle!";
+  RCLCPP_DEBUG_STREAM(this->get_logger(), "Initial string: " << pub_message_);
+  // create callback for service
+  modify_string_service_ = this->create_service<cpp_pubsub::srv::ModifyString>(
+      "/modify_string",
+      std::bind(&MinimalPublisher::modify, this, std::placeholders::_1,
+                std::placeholders::_2));
+  RCLCPP_DEBUG(this->get_logger(), "Initialized publisher");
 
-    count =
-    this->get_parameter("count").get_parameter_value().get<int>();
-    count_ = count;
-    RCLCPP_DEBUG_STREAM(this->get_logger(), "Count begins from: " << count_);
-    // timer for publishing at regular intervals
-    timer_ = this->create_wall_timer(
-        500ms, std::bind(&MinimalPublisher::timer_callback, this));
-    pub_message = "Fear the turtle!";
-    RCLCPP_DEBUG_STREAM(this->get_logger(), "Initial string: " << pub_message);
-    // create callback for service
-    modify_string_service_ =
-        this->create_service<cpp_pubsub::srv::ModifyString>(
-            "/modify_string",
-            std::bind(&MinimalPublisher::modify, this, std::placeholders::_1,
-                      std::placeholders::_2));
-    RCLCPP_DEBUG(this->get_logger(), "Initialized publisher");
+  tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
-    tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster> (*this);
+  // Read message content and assign it to
+  // corresponding tf variables
 
-    // Read message content and assign it to
-    // corresponding tf variables
-    
-    t.header.stamp = this->get_clock()->now();
-    t.header.frame_id = "/world";
-    t.child_frame_id = "/talk";
-    // tf_broadcaster_->sendTransform(t);
-    t.transform.translation.x = 1.0;
-    t.transform.translation.y = 1.0;
-    t.transform.translation.z = 1.0;
+  t.header.stamp = this->get_clock()->now();
+  t.header.frame_id = "/world";
+  t.child_frame_id = "/talk";
+  // tf_broadcaster_->sendTransform(t);
+  t.transform.translation.x = 1.0;
+  t.transform.translation.y = 1.0;
+  t.transform.translation.z = 1.0;
 
-    tf2::Quaternion q;
-    q.setRPY(1.571,0.1,0.1);
-    t.transform.rotation.x = q.x();
-    t.transform.rotation.y = q.y();
-    t.transform.rotation.z = q.z();
-    t.transform.rotation.w = q.w();    
-    
-  }
+  tf2::Quaternion q;
+  q.setRPY(1.571, 0.1, 0.1);
+  t.transform.rotation.x = q.x();
+  t.transform.rotation.y = q.y();
+  t.transform.rotation.z = q.z();
+  t.transform.rotation.w = q.w();
+}
 
- private:
- /**
-  * @brief Service callback function which modifies the published string
-  * 
-  * @param request string
-  * @param response string
-  */
-  void modify(
-      const std::shared_ptr<cpp_pubsub::srv::ModifyString::Request> request,
-      std::shared_ptr<cpp_pubsub::srv::ModifyString::Response> response) {
-    response->b = request->a;
-    pub_message = response->b;
-    RCLCPP_WARN_STREAM(this->get_logger(),
-                       "Modified string to: " << pub_message);
+//  /**
+//   * @brief Service callback function which modifies the published string
+//   *
+//   * @param request string
+//   * @param response string
+//   */
+void MinimalPublisher::modify(
+    const std::shared_ptr<cpp_pubsub::srv::ModifyString::Request> request,
+    std::shared_ptr<cpp_pubsub::srv::ModifyString::Response> response) {
+  response->b = request->a;
+  pub_message_ = response->b;
+  RCLCPP_WARN_STREAM(this->get_logger(),
+                     "Modified string to: " << pub_message_);
+}
+//   // publish string at regular intervals
+void MinimalPublisher::timer_callback() {
+  auto message = std_msgs::msg::String();
+  message.data = pub_message_ + std::to_string(count_++);
+  RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
+  RCLCPP_ERROR(this->get_logger(), "Count: %ld", count_);
 
-    
-  }
-  // publish string at regular intervals 
-  void timer_callback() {
-    auto message = std_msgs::msg::String();
-    message.data = pub_message + std::to_string(count_++);
-    RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
-    RCLCPP_ERROR(this->get_logger(), "Count: %ld", count_);
+  publisher_->publish(message);
 
-    publisher_->publish(message);
-
-    // Broadcast the tf frame
-    tf_broadcaster_->sendTransform(t);
-    
-  }
-  std::string pub_message;
-  rclcpp::TimerBase::SharedPtr timer_;
-  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
-  rclcpp::Service<cpp_pubsub::srv::ModifyString>::SharedPtr
-      modify_string_service_;
-  size_t count_;
-
-  std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
-  //Prepare a constant tf frame 
-  geometry_msgs::msg::TransformStamped t;
-  
-};
+  // Broadcast the tf frame
+  tf_broadcaster_->sendTransform(t);
+}
 
 int main(int argc, char* argv[]) {
   rclcpp::init(argc, argv);
